@@ -12,7 +12,7 @@ export default function HomeScreen() {
   const incrementCounter = () => {
     setCounter(counter + 1);
   };
-
+//test
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
