@@ -10,9 +10,9 @@ export default function HomeScreen() {
   const [counter, setCounter] = useState(0);
 
   const incrementCounter = () => {
-    setCounter(counter + 1);
+    setCounter(counter + 2);
   };
-//test
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
