@@ -10,7 +10,7 @@ export default function HomeScreen() {
   const [counter, setCounter] = useState(0);
 
   const incrementCounter = () => {
-    setCounter(counter + 1);
+    setCounter(counter + 2);
   };
 
   return (
