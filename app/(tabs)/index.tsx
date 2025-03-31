@@ -17,15 +17,16 @@ const ThemedView = ({ children, style }) => {
   return <View style={[styles.themedView, style]}>{children}</View>;
 };
 
-const BoxBuddy = () => {
+// Home Screen Component
+const HomeScreen = () => {
   const [counter, setCounter] = useState(0);
 
   const incrementCounter = () => {
-    setCounter(counter + 2); // Currently increases by 2
+    setCounter(counter + 2);
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.screenContainer}>
       <View style={styles.header}>
         <ThemedText type="title">BoxBuddy</ThemedText>
       </View>
@@ -61,11 +62,88 @@ const BoxBuddy = () => {
   );
 };
 
+// Nutrition Screen Component
+const NutritionScreen = () => {
+  return (
+    <View style={styles.screenContainer}>
+      <View style={styles.header}>
+        <ThemedText type="title">Nutrition</ThemedText>
+      </View>
+      
+      <ThemedView style={styles.nutritionContainer}>
+        <ThemedText type="subtitle">Nutrition Tracker</ThemedText>
+        <ThemedText>Track your daily nutrition goals and progress here.</ThemedText>
+        
+        <ThemedView style={styles.nutritionCard}>
+          <ThemedText style={styles.nutritionTitle}>Daily Goals</ThemedText>
+          <View style={styles.nutritionRow}>
+            <ThemedText>Calories:</ThemedText>
+            <ThemedText>2000 kcal</ThemedText>
+          </View>
+          <View style={styles.nutritionRow}>
+            <ThemedText>Protein:</ThemedText>
+            <ThemedText>150g</ThemedText>
+          </View>
+          <View style={styles.nutritionRow}>
+            <ThemedText>Carbs:</ThemedText>
+            <ThemedText>200g</ThemedText>
+          </View>
+          <View style={styles.nutritionRow}>
+            <ThemedText>Fat:</ThemedText>
+            <ThemedText>65g</ThemedText>
+          </View>
+        </ThemedView>
+        
+        <TouchableOpacity style={styles.button}>
+          <ThemedText style={styles.buttonText}>Add Meal</ThemedText>
+        </TouchableOpacity>
+      </ThemedView>
+    </View>
+  );
+};
+
+// Main App Component with Tabs
+const BoxBuddy = () => {
+  const [activeTab, setActiveTab] = useState('home');
+  
+  return (
+    <View style={styles.container}>
+      {/* Content Area */}
+      <View style={styles.content}>
+        {activeTab === 'home' ? <HomeScreen /> : <NutritionScreen />}
+      </View>
+      
+      {/* Tab Bar */}
+      <View style={styles.tabBar}>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'home' && styles.activeTab]} 
+          onPress={() => setActiveTab('home')}
+        >
+          <ThemedText style={[styles.tabText, activeTab === 'home' && styles.activeTabText]}>Home</ThemedText>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'nutrition' && styles.activeTab]} 
+          onPress={() => setActiveTab('nutrition')}
+        >
+          <ThemedText style={[styles.tabText, activeTab === 'nutrition' && styles.activeTabText]}>Nutrition</ThemedText>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
     backgroundColor: '#ffffff',
+  },
+  content: {
+    flex: 1,
+  },
+  screenContainer: {
+    flex: 1,
+    padding: 16,
   },
   header: {
     alignItems: 'center',
@@ -81,6 +159,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     marginTop: 12,
+    alignItems: 'center',
   },
   buttonText: {
     color: 'white',
@@ -115,6 +194,55 @@ const styles = StyleSheet.create({
   challengeTitle: {
     fontWeight: 'bold',
     marginBottom: 4,
+  },
+  // Tab Bar Styles
+  tabBar: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    height: 60,
+  },
+  tab: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+  },
+  activeTab: {
+    borderTopWidth: 2,
+    borderTopColor: '#8A2BE2',
+  },
+  tabText: {
+    fontSize: 14,
+    color: '#757575',
+  },
+  activeTabText: {
+    color: '#8A2BE2',
+    fontWeight: 'bold',
+  },
+  // Nutrition Screen Styles
+  nutritionContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  nutritionCard: {
+    width: '100%',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 20,
+  },
+  nutritionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  nutritionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   // Themed text styles
   normalText: {
