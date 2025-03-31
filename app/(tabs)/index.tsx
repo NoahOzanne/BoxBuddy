@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Modal, TextInput, FlatList, Image } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Modal, TextInput, FlatList, Image, ScrollView } from 'react-native';
 
 // Define the ThemedText component
 const ThemedText = ({ children, type, style }) => {
@@ -262,15 +262,132 @@ const NutritionScreen = () => {
   );
 };
 
+// WOD (Workout of the Day) Screen Component
+const WodScreen = () => {
+  const [currentWod, setCurrentWod] = useState({
+    title: "Today's WOD",
+    date: new Date().toLocaleDateString(),
+    type: "AMRAP",
+    timeLimit: "20 minutes",
+    exercises: [
+      { name: "Box Jumps", reps: 15, weight: "Body weight" },
+      { name: "Kettlebell Swings", reps: 20, weight: "53/35 lbs" },
+      { name: "Wall Balls", reps: 15, weight: "20/14 lbs" },
+      { name: "Burpees", reps: 10, weight: "Body weight" }
+    ],
+    notes: "Complete as many rounds as possible in 20 minutes. Rest as needed between exercises."
+  });
+  
+  const [pastWods, setPastWods] = useState([
+    {
+      id: '1',
+      title: "Monday's Strength",
+      date: "3 days ago",
+      type: "Strength",
+      description: "5x5 Back Squat, 3x8 Bench Press"
+    },
+    {
+      id: '2',
+      title: "Tuesday's EMOM",
+      date: "2 days ago",
+      type: "EMOM",
+      description: "Every minute on the minute: 10 push-ups, 10 sit-ups"
+    },
+    {
+      id: '3',
+      title: "Wednesday's Chipper",
+      date: "Yesterday",
+      type: "Chipper",
+      description: "100 Double-unders, 80 Air squats, 60 Sit-ups, 40 Push-ups, 20 Pull-ups"
+    }
+  ]);
+  
+  return (
+    <ScrollView style={styles.screenContainer}>
+      <View style={styles.header}>
+        <ThemedText type="title">Workout of the Day</ThemedText>
+      </View>
+      
+      <ThemedView style={styles.wodCard}>
+        <ThemedText type="subtitle">{currentWod.title}</ThemedText>
+        <ThemedText style={styles.wodDate}>{currentWod.date}</ThemedText>
+        
+        <View style={styles.wodTypeContainer}>
+          <ThemedText style={styles.wodType}>{currentWod.type}</ThemedText>
+          <ThemedText style={styles.wodTimeLimit}>{currentWod.timeLimit}</ThemedText>
+        </View>
+        
+        <View style={styles.exercisesContainer}>
+          <ThemedText style={styles.exercisesTitle}>Exercises:</ThemedText>
+          {currentWod.exercises.map((exercise, index) => (
+            <View key={index} style={styles.exerciseRow}>
+              <ThemedText style={styles.exerciseName}>{exercise.name}</ThemedText>
+              <ThemedText style={styles.exerciseDetails}>
+                {exercise.reps} reps • {exercise.weight}
+              </ThemedText>
+            </View>
+          ))}
+        </View>
+        
+        <ThemedText style={styles.wodNotes}>{currentWod.notes}</ThemedText>
+        
+        <View style={styles.buttonRow}>
+          <TouchableOpacity style={[styles.button, styles.startButton]}>
+            <ThemedText style={styles.buttonText}>Start Workout</ThemedText>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={[styles.button, styles.saveButton]}>
+            <ThemedText style={styles.buttonText}>Save for Later</ThemedText>
+          </TouchableOpacity>
+        </View>
+      </ThemedView>
+      
+      <ThemedView style={styles.pastWodsContainer}>
+        <ThemedText type="subtitle">Previous Workouts</ThemedText>
+        
+        <FlatList
+          data={pastWods}
+          keyExtractor={item => item.id}
+          scrollEnabled={false}
+          renderItem={({ item }) => (
+            <TouchableOpacity style={styles.pastWodItem}>
+              <View style={styles.pastWodHeader}>
+                <ThemedText style={styles.pastWodTitle}>{item.title}</ThemedText>
+                <ThemedText style={styles.pastWodDate}>{item.date}</ThemedText>
+              </View>
+              <ThemedText style={styles.pastWodType}>{item.type}</ThemedText>
+              <ThemedText style={styles.pastWodDescription}>{item.description}</ThemedText>
+            </TouchableOpacity>
+          )}
+        />
+      </ThemedView>
+    </ScrollView>
+  );
+};
+
 // Main App Component with Tabs
 const BoxBuddy = () => {
   const [activeTab, setActiveTab] = useState('home');
+  
+  // Render the active screen based on tab selection
+  const renderScreen = () => {
+    switch(activeTab) {
+      case 'home':
+        return <HomeScreen />;
+      case 'nutrition':
+        return <NutritionScreen />;
+      case 'wod':
+        return <WodScreen />;
+      default:
+        return <HomeScreen />;
+    }
+  };
   
   return (
     <View style={styles.container}>
       {/* Content Area */}
       <View style={styles.content}>
-        {activeTab === 'home' ? <HomeScreen /> : <NutritionScreen />}
+        {renderScreen()}
       </View>
       
       {/* Tab Bar */}
@@ -287,6 +404,13 @@ const BoxBuddy = () => {
           onPress={() => setActiveTab('nutrition')}
         >
           <ThemedText style={[styles.tabText, activeTab === 'nutrition' && styles.activeTabText]}>Nutrition</ThemedText>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'wod' && styles.activeTab]} 
+          onPress={() => setActiveTab('wod')}
+        >
+          <ThemedText style={[styles.tabText, activeTab === 'wod' && styles.activeTabText]}>WOD</ThemedText>
         </TouchableOpacity>
       </View>
     </View>
@@ -529,6 +653,101 @@ const styles = StyleSheet.create({
   trackedFoodCalories: {
     fontSize: 16,
     color: '#757575',
+  },
+  // WOD Screen Styles
+  wodCard: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  wodDate: {
+    color: '#757575',
+    marginBottom: 12,
+  },
+  wodTypeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    backgroundColor: '#e6f7ff',
+    padding: 10,
+    borderRadius: 6,
+  },
+  wodType: {
+    fontWeight: 'bold',
+    color: '#0066cc',
+  },
+  wodTimeLimit: {
+    color: '#0066cc',
+  },
+  exercisesContainer: {
+    marginBottom: 16,
+  },
+  exercisesTitle: {
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  exerciseRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  exerciseName: {
+    flex: 1,
+  },
+  exerciseDetails: {
+    color: '#757575',
+  },
+  wodNotes: {
+    fontStyle: 'italic',
+    marginBottom: 16,
+    color: '#555555',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  startButton: {
+    flex: 1,
+    marginRight: 8,
+    backgroundColor: '#8A2BE2',
+  },
+  saveButton: {
+    flex: 1,
+    marginLeft: 8,
+    backgroundColor: '#757575',
+  },
+  pastWodsContainer: {
+    padding: 16,
+    marginBottom: 20,
+  },
+  pastWodItem: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 8,
+  },
+  pastWodHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  pastWodTitle: {
+    fontWeight: 'bold',
+  },
+  pastWodDate: {
+    color: '#757575',
+    fontSize: 14,
+  },
+  pastWodType: {
+    color: '#0066cc',
+    marginBottom: 4,
+  },
+  pastWodDescription: {
+    color: '#555555',
   },
   // Themed text styles
   normalText: {
