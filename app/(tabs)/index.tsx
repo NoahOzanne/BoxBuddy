@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Modal, TextInput, FlatList, Image } from 'react-native';
 
 // Define the ThemedText component
 const ThemedText = ({ children, type, style }) => {
@@ -62,8 +62,144 @@ const HomeScreen = () => {
   );
 };
 
+// Food Scanner Component
+const FoodScanner = ({ visible, onClose, onFoodScanned }) => {
+  const [scanning, setScanning] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Mock food database
+  const foodDatabase = [
+    { id: '1', name: 'Apple', calories: 95, protein: 0.5, carbs: 25, fat: 0.3, image: 'https://example.com/apple.jpg' },
+    { id: '2', name: 'Banana', calories: 105, protein: 1.3, carbs: 27, fat: 0.4, image: 'https://example.com/banana.jpg' },
+    { id: '3', name: 'Chicken Breast', calories: 165, protein: 31, carbs: 0, fat: 3.6, image: 'https://example.com/chicken.jpg' },
+    { id: '4', name: 'Broccoli', calories: 55, protein: 3.7, carbs: 11.2, fat: 0.6, image: 'https://example.com/broccoli.jpg' },
+    { id: '5', name: 'Salmon', calories: 206, protein: 22, carbs: 0, fat: 13, image: 'https://example.com/salmon.jpg' },
+  ];
+  
+  // Filter foods based on search query
+  const filteredFoods = foodDatabase.filter(food => 
+    food.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  // Simulate scanning process
+  const startScanning = () => {
+    setScanning(true);
+    
+    // Simulate a scan completion after 2 seconds
+    setTimeout(() => {
+      setScanning(false);
+      // Randomly select a food from the database to simulate a scan result
+      const randomFood = foodDatabase[Math.floor(Math.random() * foodDatabase.length)];
+      onFoodScanned(randomFood);
+      onClose();
+    }, 2000);
+  };
+  
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={false}
+      onRequestClose={onClose}
+    >
+      <View style={styles.scannerContainer}>
+        <View style={styles.scannerHeader}>
+          <ThemedText type="subtitle">Add Food</ThemedText>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <ThemedText>✕</ThemedText>
+          </TouchableOpacity>
+        </View>
+        
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search for a food..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+        
+        <View style={styles.scanButtonContainer}>
+          <TouchableOpacity 
+            style={[styles.button, styles.scanButton]} 
+            onPress={startScanning}
+            disabled={scanning}
+          >
+            <ThemedText style={styles.buttonText}>
+              {scanning ? 'Scanning...' : 'Scan Food'}
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
+        
+        {scanning ? (
+          <View style={styles.scanningView}>
+            <View style={styles.scanner}>
+              <View style={styles.scannerLine} />
+            </View>
+            <ThemedText style={styles.scanningText}>Scanning food...</ThemedText>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredFoods}
+            keyExtractor={item => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity 
+                style={styles.foodItem}
+                onPress={() => {
+                  onFoodScanned(item);
+                  onClose();
+                }}
+              >
+                <View style={styles.foodImagePlaceholder}>
+                  {/* In a real app, you would use: <Image source={{uri: item.image}} style={styles.foodImage} /> */}
+                  <ThemedText>🍎</ThemedText>
+                </View>
+                <View style={styles.foodInfo}>
+                  <ThemedText style={styles.foodName}>{item.name}</ThemedText>
+                  <ThemedText style={styles.foodCalories}>{item.calories} kcal</ThemedText>
+                </View>
+                <TouchableOpacity style={styles.addButton}>
+                  <ThemedText style={styles.addButtonText}>+</ThemedText>
+                </TouchableOpacity>
+              </TouchableOpacity>
+            )}
+          />
+        )}
+      </View>
+    </Modal>
+  );
+};
+
 // Nutrition Screen Component
 const NutritionScreen = () => {
+  const [showScanner, setShowScanner] = useState(false);
+  const [trackedFoods, setTrackedFoods] = useState([]);
+  const [dailyTotals, setDailyTotals] = useState({
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0
+  });
+  
+  // Update daily totals whenever tracked foods change
+  useEffect(() => {
+    const totals = trackedFoods.reduce((acc, food) => {
+      return {
+        calories: acc.calories + food.calories,
+        protein: acc.protein + food.protein,
+        carbs: acc.carbs + food.carbs,
+        fat: acc.fat + food.fat
+      };
+    }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+    
+    setDailyTotals(totals);
+  }, [trackedFoods]);
+  
+  // Handle adding a scanned food to the tracked foods list
+  const handleFoodScanned = (food) => {
+    setTrackedFoods([...trackedFoods, food]);
+  };
+  
   return (
     <View style={styles.screenContainer}>
       <View style={styles.header}>
@@ -72,32 +208,56 @@ const NutritionScreen = () => {
       
       <ThemedView style={styles.nutritionContainer}>
         <ThemedText type="subtitle">Nutrition Tracker</ThemedText>
-        <ThemedText>Track your daily nutrition goals and progress here.</ThemedText>
         
         <ThemedView style={styles.nutritionCard}>
-          <ThemedText style={styles.nutritionTitle}>Daily Goals</ThemedText>
+          <ThemedText style={styles.nutritionTitle}>Daily Progress</ThemedText>
           <View style={styles.nutritionRow}>
             <ThemedText>Calories:</ThemedText>
-            <ThemedText>2000 kcal</ThemedText>
+            <ThemedText>{dailyTotals.calories} / 2000 kcal</ThemedText>
           </View>
           <View style={styles.nutritionRow}>
             <ThemedText>Protein:</ThemedText>
-            <ThemedText>150g</ThemedText>
+            <ThemedText>{dailyTotals.protein.toFixed(1)} / 150g</ThemedText>
           </View>
           <View style={styles.nutritionRow}>
             <ThemedText>Carbs:</ThemedText>
-            <ThemedText>200g</ThemedText>
+            <ThemedText>{dailyTotals.carbs.toFixed(1)} / 200g</ThemedText>
           </View>
           <View style={styles.nutritionRow}>
             <ThemedText>Fat:</ThemedText>
-            <ThemedText>65g</ThemedText>
+            <ThemedText>{dailyTotals.fat.toFixed(1)} / 65g</ThemedText>
           </View>
         </ThemedView>
         
-        <TouchableOpacity style={styles.button}>
+        {trackedFoods.length > 0 && (
+          <ThemedView style={styles.trackedFoodsContainer}>
+            <ThemedText style={styles.nutritionTitle}>Today's Foods</ThemedText>
+            <FlatList
+              data={trackedFoods}
+              keyExtractor={(item, index) => `${item.id}-${index}`}
+              renderItem={({ item }) => (
+                <View style={styles.trackedFoodItem}>
+                  <ThemedText style={styles.trackedFoodName}>{item.name}</ThemedText>
+                  <ThemedText style={styles.trackedFoodCalories}>{item.calories} kcal</ThemedText>
+                </View>
+              )}
+            />
+          </ThemedView>
+        )}
+        
+        <TouchableOpacity 
+          style={styles.button}
+          onPress={() => setShowScanner(true)}
+        >
           <ThemedText style={styles.buttonText}>Add Meal</ThemedText>
         </TouchableOpacity>
       </ThemedView>
+      
+      <FoodScanner 
+        visible={showScanner} 
+        onClose={() => setShowScanner(false)}
+        onFoodScanned={handleFoodScanned}
+      />
     </View>
   );
 };
@@ -243,6 +403,132 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+  },
+  // Food Scanner Styles
+  scannerContainer: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    padding: 16,
+  },
+  scannerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  closeButton: {
+    padding: 8,
+  },
+  searchContainer: {
+    marginBottom: 16,
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+  },
+  scanButtonContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  scanButton: {
+    width: '80%',
+  },
+  scanningView: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scanner: {
+    width: 250,
+    height: 250,
+    borderWidth: 2,
+    borderColor: '#8A2BE2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  scannerLine: {
+    height: 2,
+    width: '100%',
+    backgroundColor: '#8A2BE2',
+    position: 'absolute',
+    top: '50%',
+    // Add animation in a real app
+  },
+  scanningText: {
+    marginTop: 10,
+    fontSize: 16,
+  },
+  foodItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  foodImagePlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  foodImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  foodInfo: {
+    flex: 1,
+  },
+  foodName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  foodCalories: {
+    fontSize: 14,
+    color: '#757575',
+  },
+  addButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#8A2BE2',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  // Tracked Foods Styles
+  trackedFoodsContainer: {
+    width: '100%',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 20,
+    maxHeight: 200,
+  },
+  trackedFoodItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  trackedFoodName: {
+    fontSize: 16,
+  },
+  trackedFoodCalories: {
+    fontSize: 16,
+    color: '#757575',
   },
   // Themed text styles
   normalText: {
