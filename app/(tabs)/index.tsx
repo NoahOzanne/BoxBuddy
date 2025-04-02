@@ -22,7 +22,7 @@ const HomeScreen = () => {
   const [counter, setCounter] = useState(0);
 
   const incrementCounter = () => {
-    setCounter(counter + 2);
+    setCounter(counter + 5);
   };
 
   return (
