@@ -19,44 +19,58 @@ const ThemedView = ({ children, style }) => {
 
 // Home Screen Component
 const HomeScreen = () => {
-  const [counter, setCounter] = useState(0);
-
-  const incrementCounter = () => {
-    setCounter(counter + 5);
-  };
-
   return (
     <View style={styles.screenContainer}>
       <View style={styles.header}>
         <ThemedText type="title">BoxBuddy</ThemedText>
       </View>
       
-      <View style={styles.counterContainer}>
-        <ThemedText type="large">{counter}</ThemedText>
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={incrementCounter}
-        >
-          <ThemedText style={styles.buttonText}>Increment</ThemedText>
+      <ThemedView style={styles.welcomeContainer}>
+        <ThemedText type="subtitle">Welcome to BoxBuddy!</ThemedText>
+        <ThemedText>Your all-in-one fitness companion for workouts, nutrition tracking, and community.</ThemedText>
+      </ThemedView>
+
+      <ThemedView style={styles.quickAccessContainer}>
+        <ThemedText type="subtitle">Quick Access</ThemedText>
+        
+        <TouchableOpacity style={styles.quickAccessItem}>
+          <View style={styles.quickAccessIcon}>
+            <ThemedText style={styles.iconText}>🏋️</ThemedText>
+          </View>
+          <ThemedText>Today's WOD</ThemedText>
         </TouchableOpacity>
-      </View>
-
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>Tap the purple "Increment" button above to increase the counter by 2.</ThemedText>
-
-        <ThemedView style={styles.tipContainer}>
-          <ThemedText style={styles.tipText}>
-            💡 Tip: Notice how the counter always increases by 2 instead of 1. This is controlled by the
-            <ThemedText style={styles.codeText}> incrementCounter </ThemedText>
-            function in our component.
-          </ThemedText>
-        </ThemedView>
-
-        <ThemedView style={styles.challengeContainer}>
-          <ThemedText style={styles.challengeTitle}>Challenge:</ThemedText>
-          <ThemedText>Try modifying the code to make the counter increase by 5 instead of 2.</ThemedText>
-        </ThemedView>
+        
+        <TouchableOpacity style={styles.quickAccessItem}>
+          <View style={styles.quickAccessIcon}>
+            <ThemedText style={styles.iconText}>🍎</ThemedText>
+          </View>
+          <ThemedText>Log Meal</ThemedText>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.quickAccessItem}>
+          <View style={styles.quickAccessIcon}>
+            <ThemedText style={styles.iconText}>👥</ThemedText>
+          </View>
+          <ThemedText>Community Feed</ThemedText>
+        </TouchableOpacity>
+      </ThemedView>
+      
+      <ThemedView style={styles.statsContainer}>
+        <ThemedText type="subtitle">Your Stats</ThemedText>
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <ThemedText style={styles.statValue}>5</ThemedText>
+            <ThemedText style={styles.statLabel}>Workouts</ThemedText>
+          </View>
+          <View style={styles.statItem}>
+            <ThemedText style={styles.statValue}>1,250</ThemedText>
+            <ThemedText style={styles.statLabel}>Calories</ThemedText>
+          </View>
+          <View style={styles.statItem}>
+            <ThemedText style={styles.statValue}>3</ThemedText>
+            <ThemedText style={styles.statLabel}>Friends</ThemedText>
+          </View>
+        </View>
       </ThemedView>
     </View>
   );
@@ -365,6 +379,193 @@ const WodScreen = () => {
   );
 };
 
+// Social Screen Component (New)
+const SocialScreen = () => {
+  const [comments, setComments] = useState({});
+  const [commentText, setCommentText] = useState('');
+  const [activePostId, setActivePostId] = useState(null);
+  
+  // Mock social feed data
+  const socialFeed = [
+    {
+      id: '1',
+      user: {
+        name: 'Sarah Johnson',
+        avatar: 'https://example.com/avatar1.jpg',
+        gym: 'CrossFit Elite'
+      },
+      time: '2 hours ago',
+      content: 'Just crushed today\'s WOD! 5 rounds in 18:45 💪',
+      workout: {
+        type: 'AMRAP',
+        description: '20 min AMRAP: 15 Box Jumps, 20 KB Swings, 15 Wall Balls, 10 Burpees'
+      },
+      likes: 24,
+      commentCount: 5
+    },
+    {
+      id: '2',
+      user: {
+        name: 'Mike Chen',
+        avatar: 'https://example.com/avatar2.jpg',
+        gym: 'Iron Fitness'
+      },
+      time: '5 hours ago',
+      content: 'New PR on back squat today! 315lbs x 3 reps 🏋️‍♂️',
+      workout: {
+        type: 'Strength',
+        description: '5x3 Back Squat, building to heavy set of 3'
+      },
+      likes: 42,
+      commentCount: 8
+    },
+    {
+      id: '3',
+      user: {
+        name: 'Emma Wilson',
+        avatar: 'https://example.com/avatar3.jpg',
+        gym: 'CrossFit Elite'
+      },
+      time: 'Yesterday',
+      content: 'Meal prep Sunday! Prepped all my lunches for the week. Staying on track with nutrition goals 🥗',
+      likes: 18,
+      commentCount: 3
+    }
+  ];
+  
+  // Initialize comments for each post
+  useEffect(() => {
+    const initialComments = {};
+    socialFeed.forEach(post => {
+      initialComments[post.id] = [
+        { id: `${post.id}-1`, user: 'Alex', text: 'Great job! Keep it up! 👏', time: '1h ago' },
+        { id: `${post.id}-2`, user: 'Taylor', text: 'Impressive work!', time: '30m ago' }
+      ];
+    });
+    setComments(initialComments);
+  }, []);
+  
+  // Handle adding a new comment
+  const handleAddComment = () => {
+    if (commentText.trim() && activePostId) {
+      const newComment = {
+        id: `${activePostId}-${comments[activePostId].length + 1}`,
+        user: 'You',
+        text: commentText,
+        time: 'Just now'
+      };
+      
+      setComments({
+        ...comments,
+        [activePostId]: [...comments[activePostId], newComment]
+      });
+      
+      setCommentText('');
+    }
+  };
+  
+  // Toggle comment section for a post
+  const toggleComments = (postId) => {
+    setActivePostId(activePostId === postId ? null : postId);
+    setCommentText('');
+  };
+  
+  return (
+    <ScrollView style={styles.screenContainer}>
+      <View style={styles.header}>
+        <ThemedText type="title">Community</ThemedText>
+      </View>
+      
+      <View style={styles.socialFilters}>
+        <TouchableOpacity style={[styles.filterButton, styles.activeFilter]}>
+          <ThemedText style={styles.activeFilterText}>All</ThemedText>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.filterButton}>
+          <ThemedText>Friends</ThemedText>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.filterButton}>
+          <ThemedText>My Gym</ThemedText>
+        </TouchableOpacity>
+      </View>
+      
+      {socialFeed.map(post => (
+        <ThemedView key={post.id} style={styles.socialPost}>
+          <View style={styles.postHeader}>
+            <View style={styles.userAvatarPlaceholder}>
+              <ThemedText>👤</ThemedText>
+            </View>
+            <View style={styles.postHeaderInfo}>
+              <ThemedText style={styles.userName}>{post.user.name}</ThemedText>
+              <View style={styles.postSubHeader}>
+                <ThemedText style={styles.userGym}>{post.user.gym}</ThemedText>
+                <ThemedText style={styles.postTime}> • {post.time}</ThemedText>
+              </View>
+            </View>
+          </View>
+          
+          <ThemedText style={styles.postContent}>{post.content}</ThemedText>
+          
+          {post.workout && (
+            <View style={styles.workoutCard}>
+              <View style={styles.workoutTypeTag}>
+                <ThemedText style={styles.workoutTypeText}>{post.workout.type}</ThemedText>
+              </View>
+              <ThemedText style={styles.workoutDescription}>{post.workout.description}</ThemedText>
+            </View>
+          )}
+          
+          <View style={styles.postActions}>
+            <TouchableOpacity style={styles.actionButton}>
+              <ThemedText style={styles.actionText}>👍 {post.likes}</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => toggleComments(post.id)}
+            >
+              <ThemedText style={styles.actionText}>
+                💬 {comments[post.id]?.length || 0}
+              </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton}>
+              <ThemedText style={styles.actionText}>🔄 Share</ThemedText>
+            </TouchableOpacity>
+          </View>
+          
+          {activePostId === post.id && (
+            <View style={styles.commentsSection}>
+              <View style={styles.commentsList}>
+                {comments[post.id]?.map(comment => (
+                  <View key={comment.id} style={styles.commentItem}>
+                    <ThemedText style={styles.commentUser}>{comment.user}</ThemedText>
+                    <ThemedText style={styles.commentText}>{comment.text}</ThemedText>
+                    <ThemedText style={styles.commentTime}>{comment.time}</ThemedText>
+                  </View>
+                ))}
+              </View>
+              
+              <View style={styles.addCommentContainer}>
+                <TextInput
+                  style={styles.commentInput}
+                  placeholder="Add a comment..."
+                  value={commentText}
+                  onChangeText={setCommentText}
+                />
+                <TouchableOpacity 
+                  style={[styles.button, styles.commentButton]}
+                  onPress={handleAddComment}
+                  disabled={!commentText.trim()}
+                >
+                  <ThemedText style={styles.buttonText}>Post</ThemedText>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </ThemedView>
+      ))}
+    </ScrollView>
+  );
+};
+
 // Main App Component with Tabs
 const BoxBuddy = () => {
   const [activeTab, setActiveTab] = useState('home');
@@ -378,6 +579,8 @@ const BoxBuddy = () => {
         return <NutritionScreen />;
       case 'wod':
         return <WodScreen />;
+      case 'social':
+        return <SocialScreen />;
       default:
         return <HomeScreen />;
     }
@@ -412,6 +615,13 @@ const BoxBuddy = () => {
         >
           <ThemedText style={[styles.tabText, activeTab === 'wod' && styles.activeTabText]}>WOD</ThemedText>
         </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'social' && styles.activeTab]} 
+          onPress={() => setActiveTab('social')}
+        >
+          <ThemedText style={[styles.tabText, activeTab === 'social' && styles.activeTabText]}>Social</ThemedText>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -433,10 +643,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  counterContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
   button: {
     backgroundColor: '#8A2BE2', // Purple color
     paddingHorizontal: 20,
@@ -449,35 +655,58 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
-  stepContainer: {
-    marginTop: 20,
+  // Home Screen Styles
+  welcomeContainer: {
     padding: 16,
-    borderRadius: 8,
     backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    marginBottom: 20,
   },
-  tipContainer: {
-    marginTop: 16,
+  quickAccessContainer: {
+    marginBottom: 20,
+  },
+  quickAccessItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 12,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  quickAccessIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#e6f7ff',
-    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
-  tipText: {
-    fontSize: 14,
+  iconText: {
+    fontSize: 20,
   },
-  codeText: {
-    fontFamily: 'monospace',
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 4,
+  statsContainer: {
+    padding: 16,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
   },
-  challengeContainer: {
-    marginTop: 16,
-    padding: 12,
-    backgroundColor: '#fff9e6',
-    borderRadius: 6,
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
   },
-  challengeTitle: {
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statValue: {
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 4,
+    color: '#8A2BE2',
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#757575',
   },
   // Tab Bar Styles
   tabBar: {
@@ -748,6 +977,148 @@ const styles = StyleSheet.create({
   },
   pastWodDescription: {
     color: '#555555',
+  },
+  // Social Screen Styles
+  socialFilters: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  filterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+  },
+  activeFilter: {
+    backgroundColor: '#8A2BE2',
+  },
+  activeFilterText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  socialPost: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  postHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  userAvatarPlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#e0e0e0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  postHeaderInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  postSubHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userGym: {
+    fontSize: 14,
+    color: '#757575',
+  },
+  postTime: {
+    fontSize: 14,
+    color: '#757575',
+  },
+  postContent: {
+    marginBottom: 12,
+    fontSize: 16,
+  },
+  workoutCard: {
+    backgroundColor: '#e6f7ff',
+    borderRadius: 6,
+    padding: 12,
+    marginBottom: 12,
+  },
+  workoutTypeTag: {
+    backgroundColor: '#0066cc',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  workoutTypeText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  workoutDescription: {
+    color: '#333333',
+  },
+  postActions: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    paddingTop: 12,
+  },
+  actionButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  actionText: {
+    color: '#757575',
+  },
+  commentsSection: {
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    paddingTop: 12,
+  },
+  commentsList: {
+    marginBottom: 12,
+  },
+  commentItem: {
+    marginBottom: 8,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  commentUser: {
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  commentText: {
+    marginBottom: 4,
+  },
+  commentTime: {
+    fontSize: 12,
+    color: '#757575',
+  },
+  addCommentContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  commentInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+  },
+  commentButton: {
+    marginTop: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   // Themed text styles
   normalText: {
